@@ -1,0 +1,69 @@
+-- ======================================================
+--   BASE DE DATOS: RACO - SECOPP SYSTEM
+--   PostgreSQL 16
+-- ======================================================
+
+-- 1. TABLA DE USUARIOS
+CREATE TABLE usuarios (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    mfa_secret VARCHAR(200),
+    fecha_registro TIMESTAMP DEFAULT NOW(),
+    activo BOOLEAN DEFAULT TRUE
+);
+
+-- 2. PREFERENCIAS DE BÚSQUEDA
+CREATE TABLE preferencias (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    palabra_clave VARCHAR(200),
+    entidad VARCHAR(200),
+    categoria VARCHAR(200),
+    valor_min NUMERIC,
+    valor_max NUMERIC,
+    departamento VARCHAR(200),
+    ciudad VARCHAR(200),
+    fecha_creacion TIMESTAMP DEFAULT NOW()
+);
+
+-- 3. NOTIFICACIONES PROGRAMADAS
+CREATE TABLE notificaciones_programadas (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    criterio JSONB NOT NULL,   -- ejemplo: {"palabra": "software", "valor_min": 1000000}
+    frecuencia VARCHAR(50) NOT NULL, -- diario, semanal, etc.
+    ultima_ejecucion TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE,
+    creado_en TIMESTAMP DEFAULT NOW()
+);
+
+-- 4. HISTORIAL DE BÚSQUEDAS (OPCIONAL PERO RECOMENDADO)
+CREATE TABLE historial_busquedas (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE SET NULL,
+    criterios JSONB NOT NULL,
+    cantidad_resultados INT,
+    fecha TIMESTAMP DEFAULT NOW()
+);
+
+-- 5. TOKENS MFA (Si el proyecto lo implementa)
+CREATE TABLE tokens_mfa (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    codigo VARCHAR(10) NOT NULL,
+    expiracion TIMESTAMP NOT NULL,
+    usado BOOLEAN DEFAULT FALSE
+);
+
+INSERT INTO usuarios (nombre, email, password_hash) VALUES
+('Samuel Rada', 'samuel@raco.com', 'HASH'),
+('Juan Palomino', 'juan@raco.com', 'HASH'),
+('Daniel Rodríguez', 'daniel@raco.com', 'HASH');
+
+INSERT INTO preferencias (usuario_id, palabra_clave, entidad, categoria)
+VALUES
+(1, 'software', 'Mintic', 'Servicios'),
+(1, 'soporte', 'Gobernación de Bogotá', 'Tecnología');
+
