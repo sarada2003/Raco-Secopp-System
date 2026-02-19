@@ -1,0 +1,32 @@
+<mat-toolbar color="primary" class="toolbar" fxLayout="row" fxLayoutAlign="space-between center"> 
+  <div fxLayout="row" fxLayoutAlign="start center">
+    <img src="assets/logo.png" alt="El Bosque Trading" height="40" style="margin-right: 16px;">
+    <a mat-button routerLink="compra">Comprar y vender</a>
+    <a mat-button routerLink="estrategias">Estrategias</a>
+    <a mat-button routerLink="gold">Suscripción</a>
+  </div>
+
+  <div fxLayout="row" fxLayoutGap="16px" class="user-info">
+    <button mat-button [matMenuTriggerFor]="menuUsuario">
+      <mat-icon>account_circle</mat-icon>
+      {{ nombreUsuario }}
+    </button>
+    <mat-menu #menuUsuario="matMenu">
+      <button mat-menu-item routerLink="perfil">
+        <mat-icon>person</mat-icon>
+        Perfil
+      </button>
+      <button mat-menu-item routerLink="pagos">
+        <mat-icon>payments</mat-icon>
+        Pagos
+      </button>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Cerrar sesión
+      </button>
+    </mat-menu>
+  </div>
+</mat-toolbar>
+
+<!-- Aquí se renderiza el contenido del dashboard -->
+<router-outlet></router-outlet>

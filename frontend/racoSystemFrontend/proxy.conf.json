@@ -1,0 +1,10 @@
+{
+  "/yahoo": {
+    "target": "https://query1.finance.yahoo.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/yahoo": ""
+    }
+  }
+}

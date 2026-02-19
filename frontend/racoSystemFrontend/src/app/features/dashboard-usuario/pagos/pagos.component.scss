@@ -1,0 +1,74 @@
+.pagos-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 600px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.tarjeta {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tarjeta h2 {
+  margin-bottom: 0.5rem;
+}
+
+.tarjeta p {
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+.input-group {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+}
+
+.btn-fondear,
+.btn-suscribirse {
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-fondear {
+  background-color: #3f51b5;
+  color: white;
+
+  &:hover {
+    background-color: #32408f;
+  }
+}
+
+.btn-suscribirse {
+  background-color: #f50057;
+  color: white;
+
+  &:hover {
+    background-color: #c51162;
+  }
+}

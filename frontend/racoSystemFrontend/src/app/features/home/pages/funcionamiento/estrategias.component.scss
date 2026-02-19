@@ -1,0 +1,61 @@
+.funciona-section {
+  display: flex;
+  padding: 70px 40px;
+  gap: 60px;
+  align-items: flex-start;
+  background: #0A0A0A; // negro carbón
+
+  .text-area {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    color: #fff;
+
+    h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .intro {
+      font-size: 1.2rem;
+      color: #C7C7C7;
+      line-height: 1.65;
+      margin-bottom: 15px;
+    }
+
+    .card {
+      background: #111111; // negro grafito
+      padding: 22px 26px;
+      border-radius: 14px;
+      border-left: 4px solid #E5C46A; // dorado corporativo
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #E5C46A;  // dorado
+        margin-bottom: 8px;
+      }
+
+      p {
+        color: #E1E1E1;
+        font-size: 1.05rem;
+        line-height: 1.55;
+      }
+    }
+  }
+
+  .image-area {
+    width: 50%;
+
+    img {
+      width: 100%;
+      border-radius: 20px;
+      object-fit: cover;
+      box-shadow: 0 0 35px rgba(229, 196, 106, 0.25); // sombra dorada
+      border: 2px solid rgba(229, 196, 106, 0.4);
+    }
+  }
+}
