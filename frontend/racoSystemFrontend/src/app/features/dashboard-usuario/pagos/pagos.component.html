@@ -1,0 +1,30 @@
+<div class="pagos-container">
+  <div class="tarjeta">
+    <h2>Fondear cuenta</h2>
+    <p>Agrega saldo a tu cuenta para comenzar a invertir.</p>
+
+    <div class="input-group">
+      <label for="monto">Monto a fondear (USD):</label>
+      <input
+        type="number"
+        id="monto"
+        [(ngModel)]="montoFondeo"
+        min="1"
+        placeholder="Ej: 10"
+      />
+    </div>
+
+    <button class="btn-fondear" (click)="fondearCuenta()">
+      Fondear
+    </button>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Suscribirse a plan Gold</h2>
+    <p>Accede a estrategias premium, soporte personalizado y más.</p>
+
+    <button class="btn-suscribirse" (click)="suscribirse()">
+      Suscribirse $20 USD
+    </button>
+  </div>
+</div>

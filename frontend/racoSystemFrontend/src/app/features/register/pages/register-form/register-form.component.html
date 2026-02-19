@@ -1,0 +1,77 @@
+<div class="register-wrapper">
+  
+  <div class="register-left">
+    <img src="assets/fondo.png" alt="Mascota" />
+  </div>
+
+  <div class="register-right">
+    <h2>Crea tu cuenta</h2>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="form-container">
+
+      <!-- Nombre -->
+      <mat-form-field appearance="fill" class="raco-field">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="name" required />
+        <mat-error *ngIf="registerForm.get('name')?.hasError('required')">
+          El nombre es obligatorio
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Username -->
+      <mat-form-field appearance="fill" class="raco-field">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username" required />
+        <mat-error *ngIf="registerForm.get('username')?.hasError('required')">
+          El nombre de usuario es obligatorio
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Email -->
+      <mat-form-field appearance="fill" class="raco-field">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" required />
+        <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
+          El correo es obligatorio
+        </mat-error>
+        <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
+          Debe ser un correo válido
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Teléfono -->
+      <mat-form-field appearance="fill" class="raco-field">
+        <mat-label>Teléfono</mat-label>
+        <input matInput type="tel" formControlName="phone" required />
+        <mat-error *ngIf="registerForm.get('phone')?.hasError('required')">
+          El teléfono es obligatorio
+        </mat-error>
+        <mat-error *ngIf="registerForm.get('phone')?.hasError('pattern')">
+          El teléfono debe contener solo números (7 a 15 dígitos)
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Contraseña -->
+      <mat-form-field appearance="fill" class="raco-field">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="password" required />
+        <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
+          La contraseña es obligatoria
+        </mat-error>
+        <mat-error *ngIf="registerForm.get('password')?.hasError('pattern')">
+          Debe contener al menos una mayúscula y un número
+        </mat-error>
+        <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">
+          Debe tener al menos 8 caracteres
+        </mat-error>
+      </mat-form-field>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-gold" [disabled]="registerForm.invalid">
+          Registrar
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

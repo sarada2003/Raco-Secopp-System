@@ -1,0 +1,47 @@
+
+.toolbar {
+  background-color: #000 !important;
+  color: white;
+
+  a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    margin-right: 1rem;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  button {
+    font-family: inherit;
+  }
+}
+.btn-login, .btn-signup {
+  font-weight: bold;
+  font-size: 0.9rem;
+  padding: 0.5rem 1.5rem;
+  border-radius: 999px;
+  border: 2px solid #d4ff00;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-login {
+  background-color: transparent;
+  color: #d4ff00;
+
+  &:hover {
+    background-color: rgba(212, 255, 0, 0.1);
+  }
+}
+
+.btn-signup {
+  background-color: #d4ff00;
+  color: black;
+
+  &:hover {
+    background-color: #b0e600;
+  }
+}

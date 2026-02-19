@@ -1,0 +1,32 @@
+<div class="login-wrapper">
+  <div class="login-left">
+    <img src="assets/fondo2.png" alt="Mascota" />
+  </div>
+
+  <div class="login-right">
+    <h2>Inicia sesión</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="form-container">
+
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="username" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Contraseña</mat-label>
+        <input matInput type="password" formControlName="password" required />
+      </mat-form-field>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-black" [disabled]="loginForm.invalid">
+           Iniciar sesión
+        </button>
+      </div>
+    </form>
+
+    <button class="google-button" (click)="loginGoogle()">
+      <img src="assets/google.png" alt="Google" />
+      <span>Iniciar con Google</span>
+    </button>
+  </div>
+</div>
