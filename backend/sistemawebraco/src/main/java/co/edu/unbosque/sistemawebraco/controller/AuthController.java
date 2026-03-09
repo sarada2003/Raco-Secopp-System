@@ -4,6 +4,7 @@ import co.edu.unbosque.sistemawebraco.dto.UsuarioDTO;
 import co.edu.unbosque.sistemawebraco.entity.LoginRequestDTO;
 import co.edu.unbosque.sistemawebraco.entity.LoginResponseDTO;
 import co.edu.unbosque.sistemawebraco.services.AuthService;
+import co.edu.unbosque.sistemawebraco.services.SecopService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,6 +25,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private SecopService secopService;
 
     @Operation(
             summary = "Iniciar sesión",
@@ -65,8 +69,4 @@ public class AuthController {
         LoginResponseDTO response = authService.loginConGoogle(email);
         return ResponseEntity.ok(response);
     }
-
-
-
-
 }
