@@ -1,0 +1,82 @@
+<div class="notif-wrap">
+
+  <div class="page-header">
+    <div class="header-left">
+      <h2>Notificaciones
+        <span class="badge-count" *ngIf="noLeidas > 0">{{ noLeidas }}</span>
+      </h2>
+      <p>Alertas y actualizaciones sobre contratos públicos</p>
+    </div>
+    <button class="btn-ghost" (click)="marcarTodasLeidas()" *ngIf="noLeidas > 0">
+      <mat-icon>done_all</mat-icon>
+      Marcar todas como leídas
+    </button>
+  </div>
+
+  <!-- Filtros de categoría -->
+  <div class="filtro-tabs">
+    <button
+      class="tab"
+      [class.active]="filtroActivo === 'todas'"
+      (click)="filtroActivo = 'todas'"
+    >Todas <span class="tab-count">{{ notificaciones.length }}</span></button>
+
+    <button
+      class="tab"
+      [class.active]="filtroActivo === 'contrato'"
+      (click)="filtroActivo = 'contrato'"
+    >
+      <mat-icon>description</mat-icon> Contratos
+    </button>
+
+    <button
+      class="tab"
+      [class.active]="filtroActivo === 'alerta'"
+      (click)="filtroActivo = 'alerta'"
+    >
+      <mat-icon>warning</mat-icon> Alertas
+    </button>
+
+    <button
+      class="tab"
+      [class.active]="filtroActivo === 'sistema'"
+      (click)="filtroActivo = 'sistema'"
+    >
+      <mat-icon>settings</mat-icon> Sistema
+    </button>
+  </div>
+
+  <!-- Lista -->
+  <div class="notif-list">
+    <div
+      class="notif-item"
+      *ngFor="let n of filtradas"
+      [class.no-leida]="!n.leida"
+      (click)="marcarLeida(n)"
+    >
+      <div class="notif-icon" [ngClass]="'cat-' + n.categoria">
+        <mat-icon>{{ n.icono }}</mat-icon>
+      </div>
+
+      <div class="notif-body">
+        <div class="notif-top">
+          <span class="notif-titulo">{{ n.titulo }}</span>
+          <span class="notif-fecha">{{ formatearFecha(n.fecha) }}</span>
+        </div>
+        <p class="notif-desc">{{ n.descripcion }}</p>
+        <div class="notif-footer">
+          <span class="cat-chip" [ngClass]="'chip-' + n.categoria">
+            {{ n.categoria === 'contrato' ? 'Contrato' : n.categoria === 'alerta' ? 'Alerta' : 'Sistema' }}
+          </span>
+          <span class="no-leida-dot" *ngIf="!n.leida"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="state-empty" *ngIf="filtradas.length === 0">
+    <mat-icon>notifications_none</mat-icon>
+    <p>No hay notificaciones en esta categoría.</p>
+  </div>
+
+</div>

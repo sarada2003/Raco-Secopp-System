@@ -1,0 +1,213 @@
+<div class="contratos-wrap">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h2>Contratos SECOP II</h2>
+      <p>Consulta procesos de contratación pública de Colombia</p>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <form [formGroup]="filterForm" (ngSubmit)="buscar()" class="filtros-panel">
+
+    <!-- Fila 1: Palabra clave / Entidad / Departamento -->
+    <div class="filtros-grid">
+      <div class="field-group">
+        <label>Palabra clave</label>
+        <input formControlName="palabraClave" type="text"
+               placeholder="Ej: consultoría, obras, tecnología..." class="input-dark" />
+      </div>
+      <div class="field-group">
+        <label>Entidad</label>
+        <input formControlName="entidad" type="text"
+               placeholder="Nombre de la entidad..." class="input-dark" />
+      </div>
+      <div class="field-group">
+        <label>Departamento</label>
+        <select formControlName="departamento" class="input-dark">
+          <option value="">Todos los departamentos</option>
+          <option *ngFor="let d of departamentos" [value]="d">{{ d }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Fila 2: Modalidad / Estado / Tipo de contrato -->
+    <div class="filtros-grid">
+      <div class="field-group">
+        <label>Modalidad de contratación</label>
+        <select formControlName="modalidad" class="input-dark">
+          <option value="">Todas las modalidades</option>
+          <option *ngFor="let m of modalidades" [value]="m">{{ m }}</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Estado del proceso</label>
+        <select formControlName="estado" class="input-dark">
+          <option value="">Todos los estados</option>
+          <option *ngFor="let e of estados" [value]="e">{{ e }}</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Tipo de contrato</label>
+        <select formControlName="tipoContrato" class="input-dark">
+          <option value="">Todos los tipos</option>
+          <option *ngFor="let t of tiposContrato" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Fila 3: Valor mínimo / Valor máximo / Ordenar por -->
+    <div class="filtros-grid">
+      <div class="field-group">
+        <label>Valor mínimo (COP)</label>
+        <input formControlName="valorMin" type="number" placeholder="Ej: 50000000"
+               class="input-dark" min="0" />
+      </div>
+      <div class="field-group">
+        <label>Valor máximo (COP)</label>
+        <input formControlName="valorMax" type="number" placeholder="Ej: 500000000"
+               class="input-dark" min="0" />
+      </div>
+      <div class="field-group">
+        <label>Ordenar por</label>
+        <select formControlName="ordenarPor" class="input-dark">
+          <option *ngFor="let o of ordenOptions" [value]="o.value">{{ o.label }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Fila 4: Rango de fechas de publicación -->
+    <div class="filtros-grid filtros-grid--2">
+      <div class="field-group">
+        <label>Fecha de publicación desde</label>
+        <input formControlName="fechaFirmaDesde" type="date" class="input-dark" />
+      </div>
+      <div class="field-group">
+        <label>Fecha de publicación hasta</label>
+        <input formControlName="fechaFirmaHasta" type="date" class="input-dark" />
+      </div>
+    </div>
+
+    <div class="filtros-actions">
+      <button type="submit" class="btn-primary" [disabled]="cargando">
+        <mat-icon>search</mat-icon>
+        Buscar
+      </button>
+      <button type="button" class="btn-ghost" (click)="limpiar()" [disabled]="cargando">
+        <mat-icon>clear</mat-icon>
+        Limpiar
+      </button>
+    </div>
+  </form>
+
+  <!-- Estado: cargando -->
+  <div class="state-center" *ngIf="cargando">
+    <div class="spinner"></div>
+    <p>Consultando SECOP II...</p>
+  </div>
+
+  <!-- Estado: error -->
+  <div class="state-error" *ngIf="error && !cargando">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ error }}</p>
+    <button class="btn-ghost" (click)="buscar()">Reintentar</button>
+  </div>
+
+  <!-- Resultados -->
+  <div *ngIf="!cargando && !error">
+
+    <div class="results-header" *ngIf="contratos.length > 0">
+      <span class="results-count">{{ contratos.length }} resultado(s) — Página {{ paginaActual + 1 }}</span>
+    </div>
+
+    <!-- Sin resultados -->
+    <div class="state-empty" *ngIf="contratos.length === 0">
+      <mat-icon>search_off</mat-icon>
+      <p>No se encontraron procesos con los filtros aplicados.</p>
+    </div>
+
+    <!-- Lista de contratos -->
+    <div class="contratos-list">
+      <div class="contrato-card" *ngFor="let c of contratos">
+
+        <!-- Top: ID + Estado + Fecha -->
+        <div class="contrato-top">
+          <div class="contrato-top-left">
+            <span class="id-badge">{{ c.id_del_proceso || '—' }}</span>
+            <span class="estado-badge" [ngClass]="getEstadoClass(c.estado_del_procedimiento ?? '')">
+              {{ c.estado_del_procedimiento || 'sin estado' }}
+            </span>
+          </div>
+          <span class="fecha">{{ formatearFecha(c.fecha_de_publicacion_del ?? '') }}</span>
+        </div>
+
+        <!-- Nombre del procedimiento -->
+        <h4 class="contrato-nombre">{{ c.nombre_del_procedimiento || 'Sin nombre' }}</h4>
+
+        <!-- Descripción -->
+        <p class="contrato-desc" *ngIf="c.descripci_n_del_procedimiento">
+          {{ c.descripci_n_del_procedimiento | slice:0:200 }}
+          <span *ngIf="(c.descripci_n_del_procedimiento?.length ?? 0) > 200">...</span>
+        </p>
+
+        <!-- Meta chips -->
+        <div class="contrato-meta">
+          <span class="meta-chip entidad" *ngIf="c.entidad">
+            <mat-icon>account_balance</mat-icon>
+            {{ c.entidad }}
+          </span>
+          <span class="meta-chip ubicacion" *ngIf="c.departamento_entidad">
+            <mat-icon>location_on</mat-icon>
+            {{ c.departamento_entidad }}<span *ngIf="c.ciudad_entidad">, {{ c.ciudad_entidad }}</span>
+          </span>
+          <span class="meta-chip valor" *ngIf="c.valor_total_adjudicacion">
+            <mat-icon>payments</mat-icon>
+            {{ formatearValor(c.valor_total_adjudicacion) }}
+          </span>
+          <span class="meta-chip modalidad" *ngIf="c.modalidad_de_contratacion">
+            <mat-icon>gavel</mat-icon>
+            {{ c.modalidad_de_contratacion }}
+          </span>
+          <span class="meta-chip tipo" *ngIf="c.tipo_de_contrato">
+            <mat-icon>description</mat-icon>
+            {{ c.tipo_de_contrato }}
+          </span>
+        </div>
+
+        <!-- Proveedor -->
+        <div class="contrato-proveedor" *ngIf="c.nombre_del_proveedor">
+          <mat-icon>business</mat-icon>
+          <span>{{ c.nombre_del_proveedor }}</span>
+          <span class="nit" *ngIf="c.nit_del_proveedor_adjudicado"> · NIT {{ c.nit_del_proveedor_adjudicado }}</span>
+        </div>
+
+        <!-- Acción -->
+        <div class="contrato-actions">
+          <a *ngIf="c.urlproceso" [href]="c.urlproceso" target="_blank" rel="noopener noreferrer" class="btn-participar">
+            <mat-icon>open_in_new</mat-icon>
+            Ver en SECOP II
+          </a>
+          <span *ngIf="!c.urlproceso" class="sin-enlace">
+            <mat-icon>link_off</mat-icon>
+            Enlace no disponible
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Paginación -->
+    <div class="paginacion" *ngIf="contratos.length > 0">
+      <button class="btn-ghost pag-btn" (click)="paginaAnterior()" [disabled]="paginaActual === 0">
+        <mat-icon>chevron_left</mat-icon> Anterior
+      </button>
+      <span class="pag-num">Página {{ paginaActual + 1 }}</span>
+      <button class="btn-ghost pag-btn" (click)="paginaSiguiente()" [disabled]="!hayMas">
+        Siguiente <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+
+  </div>
+
+</div>
