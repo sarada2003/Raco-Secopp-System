@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(rm \"C:/ProyectoGrado/Codigo/CodigoGitHub/Raco-Secopp-System/frontend/racoSystemFrontend/src/app/services/payment.service.ts\")",
-      "Bash(rm \"C:/ProyectoGrado/Codigo/CodigoGitHub/Raco-Secopp-System/frontend/racoSystemFrontend/src/app/services/payment.service.spec.ts\")",
-      "Bash(npx ng:*)"
-    ]
-  }
-}
