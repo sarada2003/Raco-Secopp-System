@@ -1,0 +1,67 @@
+<div class="inicio-wrap">
+
+  <div class="welcome">
+    <div class="welcome-text">
+      <p class="saludo">Bienvenido de nuevo</p>
+      <h1>{{ nombreUsuario }} <span class="dot gold">·</span></h1>
+      <p class="desc">Sistema RACO — Consulta y análisis de contratación pública de Colombia</p>
+    </div>
+    <div class="welcome-badge">
+      <mat-icon>shield</mat-icon>
+      <span>SECOP II</span>
+    </div>
+  </div>
+
+  <div class="modules-grid">
+
+    <div class="module-card" (click)="ir('contratos')">
+      <div class="module-icon contracts">
+        <mat-icon>description</mat-icon>
+      </div>
+      <div class="module-info">
+        <h3>Contratos SECOP</h3>
+        <p>Busca y filtra contratos del sistema de contratación pública. Aplica filtros por entidad, valor y palabra clave.</p>
+        <span class="module-link">Explorar contratos <mat-icon class="arrow">arrow_forward</mat-icon></span>
+      </div>
+    </div>
+
+    <div class="module-card" (click)="ir('chatbot')">
+      <div class="module-icon chatbot">
+        <mat-icon>smart_toy</mat-icon>
+      </div>
+      <div class="module-info">
+        <h3>Chatbot IA</h3>
+        <p>Realiza preguntas sobre contratos, licitaciones y procesos de contratación pública de forma conversacional.</p>
+        <span class="module-link">Abrir chatbot <mat-icon class="arrow">arrow_forward</mat-icon></span>
+      </div>
+    </div>
+
+    <div class="module-card" (click)="ir('notificaciones')">
+      <div class="module-icon notif">
+        <mat-icon>notifications_active</mat-icon>
+      </div>
+      <div class="module-info">
+        <h3>Notificaciones</h3>
+        <p>Alertas personalizadas sobre nuevos contratos y actualizaciones del sistema según tus preferencias.</p>
+        <span class="module-link">Ver alertas <mat-icon class="arrow">arrow_forward</mat-icon></span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="info-strip">
+    <div class="info-item">
+      <mat-icon>public</mat-icon>
+      <span>Datos oficiales de Colombia Compra Eficiente</span>
+    </div>
+    <div class="info-item">
+      <mat-icon>update</mat-icon>
+      <span>Información actualizada en tiempo real</span>
+    </div>
+    <div class="info-item">
+      <mat-icon>lock</mat-icon>
+      <span>Acceso seguro con autenticación JWT</span>
+    </div>
+  </div>
+
+</div>

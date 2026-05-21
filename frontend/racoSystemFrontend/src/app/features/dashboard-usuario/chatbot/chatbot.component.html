@@ -1,0 +1,70 @@
+<div class="chatbot-wrap">
+
+  <div class="chat-header">
+    <div class="bot-avatar">
+      <mat-icon>smart_toy</mat-icon>
+    </div>
+    <div class="bot-info">
+      <h3>Asistente RACO</h3>
+      <span class="status-dot"></span>
+      <span class="status-text">En línea</span>
+    </div>
+    <div class="header-badge">Contratación Pública</div>
+  </div>
+
+  <div class="messages-area">
+
+    <div
+      class="mensaje"
+      *ngFor="let m of mensajes"
+      [ngClass]="m.origen === 'usuario' ? 'mensaje-usuario' : 'mensaje-bot'"
+    >
+      <div class="burbuja" [ngClass]="m.origen === 'usuario' ? 'burbuja-usuario' : 'burbuja-bot'">
+        <div class="avatar-mini" *ngIf="m.origen === 'bot'">
+          <mat-icon>smart_toy</mat-icon>
+        </div>
+        <div class="texto-wrap">
+          <div class="texto"
+               *ngIf="m.origen === 'bot'"
+               [innerHTML]="m.texto | markdown">
+          </div>
+          <p class="texto" *ngIf="m.origen === 'usuario'">{{ m.texto }}</p>
+          <span class="hora">{{ m.hora }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicador de escritura -->
+    <div class="mensaje mensaje-bot" *ngIf="botEscribiendo">
+      <div class="burbuja burbuja-bot typing-indicator">
+        <div class="avatar-mini"><mat-icon>smart_toy</mat-icon></div>
+        <div class="dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div #messagesEnd></div>
+  </div>
+
+  <div class="sugerencias" *ngIf="mensajes.length === 1">
+    <button class="sugerencia-chip" (click)="inputTexto = '¿Qué es SECOP?'; enviar()">¿Qué es SECOP?</button>
+    <button class="sugerencia-chip" (click)="inputTexto = 'Cómo buscar contratos'; enviar()">Cómo buscar contratos</button>
+    <button class="sugerencia-chip" (click)="inputTexto = 'Qué es una licitación'; enviar()">¿Qué es una licitación?</button>
+    <button class="sugerencia-chip" (click)="inputTexto = 'ayuda'; enviar()">Ver temas disponibles</button>
+  </div>
+
+  <div class="input-area">
+    <textarea
+      [(ngModel)]="inputTexto"
+      (keydown)="onKeydown($event)"
+      placeholder="Escribe tu pregunta sobre contratación pública..."
+      class="input-dark"
+      rows="1"
+    ></textarea>
+    <button class="btn-send" (click)="enviar()" [disabled]="!inputTexto.trim() || botEscribiendo">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
+
+</div>
