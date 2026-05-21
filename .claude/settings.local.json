@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(cd /tmp)",
-      "Bash(jar -xf \"C:\\\\Users\\\\samue\\\\.gradle\\\\caches\\\\modules-2\\\\files-2.1\\\\org.springframework.ai\\\\spring-ai-openai\\\\1.1.1\\\\dafaf30cfb5287a73293c81f11f182f8365b7daf\\\\spring-ai-openai-1.1.1.jar\")"
-    ]
-  }
-}
