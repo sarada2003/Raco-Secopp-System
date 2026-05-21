@@ -9,19 +9,29 @@ import java.util.stream.Collectors;
 public class SoqlQueryBuilder {
 
     private final List<String> conditions = new ArrayList<>();
+    private final List<String> selectFields = new ArrayList<>();
+    private String fullTextSearch;
     private String orderBy;
     private Integer limit;
     private Integer offset;
-    private List<String> selectFields = new ArrayList<>();
 
-
-    public SoqlQueryBuilder like(String field, String value) {
+    /** $q — full-text search en todos los campos indexados del dataset. */
+    public SoqlQueryBuilder fullText(String value) {
         if (value != null && !value.isBlank()) {
-            conditions.add("lower(" + field + ") like lower('%" + sanitize(value) + "%')");
+            fullTextSearch = sanitize(value.trim());
         }
         return this;
     }
 
+    /** UPPER(field) LIKE '%VALUE%' — búsqueda parcial insensible a mayúsculas. */
+    public SoqlQueryBuilder upperLike(String field, String value) {
+        if (value != null && !value.isBlank()) {
+            conditions.add("UPPER(" + field + ") LIKE '%" + sanitize(value.trim().toUpperCase()) + "%'");
+        }
+        return this;
+    }
+
+    /** field = 'value' — igualdad exacta para selects. */
     public SoqlQueryBuilder equals(String field, String value) {
         if (value != null && !value.isBlank()) {
             conditions.add(field + " = '" + sanitize(value) + "'");
@@ -29,30 +39,32 @@ public class SoqlQueryBuilder {
         return this;
     }
 
+    /** field >= value — valor mínimo numérico. */
     public SoqlQueryBuilder min(String field, BigDecimal value) {
         if (value != null) {
-            conditions.add(field + " >= " + value);
+            conditions.add(field + " >= " + value.toPlainString());
         }
         return this;
     }
 
+    /** field <= value — valor máximo numérico. */
     public SoqlQueryBuilder max(String field, BigDecimal value) {
         if (value != null) {
-            conditions.add(field + " <= " + value);
+            conditions.add(field + " <= " + value.toPlainString());
         }
         return this;
     }
 
+    /** Rango de fechas en formato ISO 8601 requerido por Floating Timestamp de Socrata. */
     public SoqlQueryBuilder dateBetween(String field, LocalDate start, LocalDate end) {
         if (start != null) {
-            conditions.add(field + " >= '" + start + "'");
+            conditions.add(field + " >= '" + start + "T00:00:00'");
         }
         if (end != null) {
-            conditions.add(field + " <= '" + end + "'");
+            conditions.add(field + " <= '" + end + "T23:59:59'");
         }
         return this;
     }
-
 
     public SoqlQueryBuilder select(String... fields) {
         selectFields.addAll(List.of(fields));
@@ -66,7 +78,6 @@ public class SoqlQueryBuilder {
         return this;
     }
 
-
     public SoqlQueryBuilder limit(Integer limit) {
         this.limit = limit;
         return this;
@@ -77,35 +88,20 @@ public class SoqlQueryBuilder {
         return this;
     }
 
-    public String build() {
+    // --- Getters para uso con UriBuilder de WebClient ---
 
-        StringBuilder query = new StringBuilder();
-
-        if (!selectFields.isEmpty()) {
-            query.append("$select=")
-                    .append(String.join(",", selectFields));
-        }
-
-        if (!conditions.isEmpty()) {
-            if (query.length() > 0) query.append("&");
-            query.append("$where=")
-                    .append(conditions.stream().collect(Collectors.joining(" AND ")));
-        }
-
-        if (orderBy != null) {
-            query.append("&$order=").append(orderBy);
-        }
-
-        if (limit != null) {
-            query.append("&$limit=").append(limit);
-        }
-
-        if (offset != null) {
-            query.append("&$offset=").append(offset);
-        }
-
-        return query.toString();
+    public String getWhereClause() {
+        if (conditions.isEmpty()) return null;
+        return conditions.stream().collect(Collectors.joining(" AND "));
     }
+
+    public String getFullTextSearch() { return fullTextSearch; }
+
+    public String getOrderBy() { return orderBy; }
+
+    public List<String> getSelectFields() { return selectFields; }
+
+    public boolean hasConditions() { return !conditions.isEmpty(); }
 
     private String sanitize(String input) {
         return input.replace("'", "''");

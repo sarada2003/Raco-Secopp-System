@@ -1,24 +1,21 @@
-<mat-toolbar color="primary" class="toolbar" fxLayout="row" fxLayoutAlign="space-between center"> 
+<mat-toolbar class="toolbar" fxLayout="row" fxLayoutAlign="space-between center">
   <div fxLayout="row" fxLayoutAlign="start center">
-    <img src="assets/logo.png" alt="El Bosque Trading" height="40" style="margin-right: 16px;">
-    <a mat-button routerLink="compra">Comprar y vender</a>
-    <a mat-button routerLink="estrategias">Estrategias</a>
-    <a mat-button routerLink="gold">Suscripción</a>
+    <img src="assets/logo.png" alt="RACO" height="38" style="margin-right: 20px;">
+    <a mat-button routerLink="inicio" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:true}">Inicio</a>
+    <a mat-button routerLink="contratos" routerLinkActive="active-link">Contratos SECOP</a>
+    <a mat-button routerLink="chatbot" routerLinkActive="active-link">Chatbot IA</a>
+    <a mat-button routerLink="notificaciones" routerLinkActive="active-link">Notificaciones</a>
   </div>
 
-  <div fxLayout="row" fxLayoutGap="16px" class="user-info">
-    <button mat-button [matMenuTriggerFor]="menuUsuario">
+  <div fxLayout="row" fxLayoutGap="16px" class="user-area">
+    <button mat-button [matMenuTriggerFor]="menuUsuario" class="user-btn">
       <mat-icon>account_circle</mat-icon>
-      {{ nombreUsuario }}
+      <span class="username">{{ nombreUsuario }}</span>
     </button>
-    <mat-menu #menuUsuario="matMenu">
+    <mat-menu #menuUsuario="matMenu" class="dark-menu">
       <button mat-menu-item routerLink="perfil">
         <mat-icon>person</mat-icon>
         Perfil
-      </button>
-      <button mat-menu-item routerLink="pagos">
-        <mat-icon>payments</mat-icon>
-        Pagos
       </button>
       <button mat-menu-item (click)="logout()">
         <mat-icon>logout</mat-icon>
@@ -28,5 +25,4 @@
   </div>
 </mat-toolbar>
 
-<!-- Aquí se renderiza el contenido del dashboard -->
 <router-outlet></router-outlet>
