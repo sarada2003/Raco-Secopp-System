@@ -1,47 +1,39 @@
-
 .toolbar {
-  background-color: #000 !important;
+  background-color: #0d0d0d !important;
+  border-bottom: 1px solid #1e1e1e;
   color: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 
   a {
-    color: white;
+    color: #aaa;
     text-decoration: none;
+    font-size: 0.875rem;
     font-weight: 500;
-    margin-right: 1rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
 
-    &:hover {
-      text-decoration: underline;
-    }
+    &:hover { color: white; background: rgba(255,255,255,0.05); }
   }
 
-  button {
-    font-family: inherit;
-  }
-}
-.btn-login, .btn-signup {
-  font-weight: bold;
-  font-size: 0.9rem;
-  padding: 0.5rem 1.5rem;
-  border-radius: 999px;
-  border: 2px solid #d4ff00;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-login {
-  background-color: transparent;
-  color: #d4ff00;
-
-  &:hover {
-    background-color: rgba(212, 255, 0, 0.1);
+  ::ng-deep .active-link {
+    color: #E5C46A !important;
   }
 }
 
-.btn-signup {
-  background-color: #d4ff00;
-  color: black;
+.user-btn {
+  color: #ccc !important;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 
-  &:hover {
-    background-color: #b0e600;
-  }
+  mat-icon { font-size: 1.2rem; }
+
+  &:hover { color: white !important; }
 }
+
+.username { font-weight: 500; }
+

@@ -4,7 +4,7 @@ import { HomeComponent } from './home.component';
 import { HomeRoutingModule } from './home-routing.module';
 import { MatButtonModule } from '@angular/material/button';
 import { QueOfrecemosComponent } from './pages/que-ofrecemos/que-ofrecemos.component';
-import { EstrategiasComponent } from './pages/funcionamiento/funcionamiento';
+import { EstrategiasComponent } from './pages/funcionamiento/estrategias.component';
 import { SuscripcionComponent } from './pages/notificaciones/suscripcion.component';
 
 @NgModule({

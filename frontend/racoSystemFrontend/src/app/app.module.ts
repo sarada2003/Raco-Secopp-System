@@ -8,21 +8,25 @@ import { NavbarComponent } from './shared/navbar/navbar.component';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideAuth, getAuth } from '@angular/fire/auth';
 import { environment } from 'src/enviroments/environment';
 import { LoginComponent } from './features/login/login.component';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
-import { HttpClientModule } from '@angular/common/http';
 import { DashboardUsuarioComponent } from './features/dashboard-usuario/dashboard-usuario.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
-import { PagosComponent } from './features/dashboard-usuario/pagos/pagos.component';
-import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { PagosComponent } from './features/dashboard-usuario/pagos/pagos.component';
+import { DashboardInicioComponent } from './features/dashboard-usuario/inicio/inicio.component';
+import { ContratosComponent } from './features/dashboard-usuario/contratos/contratos.component';
+import { ChatbotComponent } from './features/dashboard-usuario/chatbot/chatbot.component';
+import { NotificacionesComponent } from './features/dashboard-usuario/notificaciones/notificaciones.component';
+import { MarkdownPipe } from './pipes/markdown.pipe';
 
 @NgModule({
   declarations: [
@@ -31,25 +35,28 @@ import { MatInputModule } from '@angular/material/input';
     MainLayoutComponent,
     LoginComponent,
     DashboardUsuarioComponent,
-    PagosComponent
+    PagosComponent,
+    DashboardInicioComponent,
+    ContratosComponent,
+    ChatbotComponent,
+    NotificacionesComponent,
+    MarkdownPipe
   ],
   imports: [
     FlexLayoutModule,
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    HttpClientModule ,
-    MatToolbarModule, 
-    MatButtonModule,
-    ReactiveFormsModule,
-     MatToolbarModule,
+    HttpClientModule,
+    MatToolbarModule,
     MatButtonModule,
     MatInputModule,
     MatFormFieldModule,
-    MatButtonModule,
     MatMenuModule,
-    FormsModule,
     MatIconModule,
+    MatProgressSpinnerModule,
+    ReactiveFormsModule,
+    FormsModule,
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideAuth(() => getAuth())
   ],
@@ -58,7 +65,8 @@ import { MatInputModule } from '@angular/material/input';
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
       multi: true
-    }],
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
