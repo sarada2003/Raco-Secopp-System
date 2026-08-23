@@ -21,11 +21,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { PagosComponent } from './features/dashboard-usuario/pagos/pagos.component';
 import { DashboardInicioComponent } from './features/dashboard-usuario/inicio/inicio.component';
 import { ContratosComponent } from './features/dashboard-usuario/contratos/contratos.component';
 import { ChatbotComponent } from './features/dashboard-usuario/chatbot/chatbot.component';
 import { NotificacionesComponent } from './features/dashboard-usuario/notificaciones/notificaciones.component';
+import { InformesComponent } from './features/dashboard-usuario/informes/informes.component';
 import { MarkdownPipe } from './pipes/markdown.pipe';
 
 @NgModule({
@@ -35,11 +35,11 @@ import { MarkdownPipe } from './pipes/markdown.pipe';
     MainLayoutComponent,
     LoginComponent,
     DashboardUsuarioComponent,
-    PagosComponent,
     DashboardInicioComponent,
     ContratosComponent,
     ChatbotComponent,
     NotificacionesComponent,
+    InformesComponent,
     MarkdownPipe
   ],
   imports: [

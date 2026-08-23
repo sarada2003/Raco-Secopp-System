@@ -4,7 +4,11 @@
     <a mat-button routerLink="inicio" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:true}">Inicio</a>
     <a mat-button routerLink="contratos" routerLinkActive="active-link">Contratos SECOP</a>
     <a mat-button routerLink="chatbot" routerLinkActive="active-link">Chatbot IA</a>
-    <a mat-button routerLink="notificaciones" routerLinkActive="active-link">Notificaciones</a>
+    <a mat-button routerLink="informes" routerLinkActive="active-link">Informes</a>
+    <a mat-button routerLink="notificaciones" routerLinkActive="active-link" class="notif-link-nav">
+      Notificaciones
+      <span class="notif-badge" *ngIf="notificacionesNoLeidas > 0">{{ notificacionesNoLeidas }}</span>
+    </a>
   </div>
 
   <div fxLayout="row" fxLayoutGap="16px" class="user-area">

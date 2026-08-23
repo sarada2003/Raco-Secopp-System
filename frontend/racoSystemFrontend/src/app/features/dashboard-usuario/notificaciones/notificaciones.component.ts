@@ -1,16 +1,15 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { NotificacionService } from 'src/app/services/notificacion.service';
+import { NotificacionDTO, SuscripcionDTO } from 'src/app/Dtos/notificacion.dto';
 
 type Categoria = 'todas' | 'contrato' | 'alerta' | 'sistema';
 
-interface Notificacion {
-  id: number;
-  titulo: string;
-  descripcion: string;
-  categoria: 'contrato' | 'alerta' | 'sistema';
-  fecha: string;
-  leida: boolean;
-  icono: string;
-}
+const ICONOS_POR_CATEGORIA: Record<string, string> = {
+  contrato: 'description',
+  alerta: 'warning',
+  sistema: 'info'
+};
 
 @Component({
   selector: 'app-notificaciones',
@@ -20,58 +19,80 @@ interface Notificacion {
 export class NotificacionesComponent implements OnInit {
 
   filtroActivo: Categoria = 'todas';
+  notificaciones: NotificacionDTO[] = [];
+  cargando = false;
+  error = '';
 
-  notificaciones: Notificacion[] = [
-    {
-      id: 1,
-      titulo: 'Nuevo contrato publicado: consultoría TI',
-      descripcion: 'El Ministerio de Tecnologías publicó un proceso de licitación para servicios de consultoría en transformación digital por valor de $500.000.000.',
-      categoria: 'contrato',
-      fecha: '2026-04-01T09:15:00',
-      leida: false,
-      icono: 'description'
-    },
-    {
-      id: 2,
-      titulo: 'Alerta: contrato próximo a vencer',
-      descripcion: 'El proceso LP-001-2026 de la Alcaldía de Bogotá tiene plazo de cierre en las próximas 48 horas.',
-      categoria: 'alerta',
-      fecha: '2026-04-01T07:00:00',
-      leida: false,
-      icono: 'warning'
-    },
-    {
-      id: 3,
-      titulo: 'Actualización del sistema SECOP II',
-      descripcion: 'Colombia Compra Eficiente realizó actualizaciones al sistema. Los datos de contratos pueden tardar hasta 2 horas en sincronizarse.',
-      categoria: 'sistema',
-      fecha: '2026-03-31T18:30:00',
-      leida: true,
-      icono: 'info'
-    },
-    {
-      id: 4,
-      titulo: 'Contrato adjudicado — obras civiles',
-      descripcion: 'El proceso de selección abreviada para obras de mantenimiento vial en Cundinamarca fue adjudicado por $1.200.000.000.',
-      categoria: 'contrato',
-      fecha: '2026-03-31T14:00:00',
-      leida: true,
-      icono: 'description'
-    },
-    {
-      id: 5,
-      titulo: 'Nueva entidad registrada',
-      descripcion: 'La Empresa de Servicios Públicos de Medellín se registró en SECOP II y comenzará a publicar sus procesos de contratación.',
-      categoria: 'sistema',
-      fecha: '2026-03-30T10:45:00',
-      leida: true,
-      icono: 'account_balance'
-    }
+  // ---- Configuración de alertas (pestaña "Sistema") ----
+  criteriosForm!: FormGroup;
+  frecuenciaAlerta: 'diario' | 'semanal' = 'diario';
+  suscripciones: SuscripcionDTO[] = [];
+  cargandoSuscripciones = false;
+  guardandoAlerta = false;
+  mensajeAlerta = '';
+  mensajeAlertaTipo: 'ok' | 'error' = 'ok';
+
+  readonly departamentos = [
+    'Amazonas', 'Antioquia', 'Arauca', 'Atlántico', 'Bolívar', 'Boyacá',
+    'Caldas', 'Caquetá', 'Casanare', 'Cauca', 'Cesar', 'Chocó', 'Córdoba',
+    'Cundinamarca', 'Guainía', 'Guaviare', 'Huila', 'La Guajira', 'Magdalena',
+    'Meta', 'Nariño', 'Norte de Santander', 'Putumayo', 'Quindío', 'Risaralda',
+    'San Andrés y Providencia', 'Santander', 'Sucre', 'Tolima', 'Valle del Cauca',
+    'Vaupés', 'Vichada', 'Distrito Capital de Bogotá'
   ];
 
-  ngOnInit(): void {}
+  readonly modalidades = [
+    'Licitación Pública',
+    'Selección Abreviada de Menor Cuantía',
+    'Contratación directa',
+    'Concurso de Méritos',
+    'Mínima Cuantía',
+    'Contratación régimen especial'
+  ];
 
-  get filtradas(): Notificacion[] {
+  readonly estados = [
+    'Publicado', 'Adjudicado', 'Celebrado', 'Desierto', 'Liquidado', 'Terminado'
+  ];
+
+  readonly tiposContrato = [
+    'Obra', 'Prestación de servicios', 'Compraventa',
+    'Consultoría', 'Suministro', 'Arrendamiento', 'Otro'
+  ];
+
+  constructor(private fb: FormBuilder, private notificacionService: NotificacionService) {}
+
+  ngOnInit(): void {
+    this.criteriosForm = this.fb.group({
+      palabraClave: [''],
+      entidad: [''],
+      departamento: [''],
+      modalidad: [''],
+      estado: [''],
+      tipoContrato: [''],
+      valorMin: [null],
+      valorMax: [null]
+    });
+
+    this.cargar();
+    this.cargarSuscripciones();
+  }
+
+  cargar(): void {
+    this.cargando = true;
+    this.error = '';
+    this.notificacionService.listar().subscribe({
+      next: (data) => {
+        this.notificaciones = data;
+        this.cargando = false;
+      },
+      error: () => {
+        this.error = 'No se pudieron cargar las notificaciones. Intenta de nuevo.';
+        this.cargando = false;
+      }
+    });
+  }
+
+  get filtradas(): NotificacionDTO[] {
     if (this.filtroActivo === 'todas') return this.notificaciones;
     return this.notificaciones.filter(n => n.categoria === this.filtroActivo);
   }
@@ -80,12 +101,42 @@ export class NotificacionesComponent implements OnInit {
     return this.notificaciones.filter(n => !n.leida).length;
   }
 
-  marcarLeida(n: Notificacion): void {
-    n.leida = true;
+  marcarLeida(n: NotificacionDTO): void {
+    if (n.leida) return;
+    n.leida = true; // optimista: revertir si falla
+    this.notificacionService.marcarLeida(n.id).subscribe({
+      error: () => { n.leida = false; }
+    });
   }
 
   marcarTodasLeidas(): void {
+    const previas = this.notificaciones.map(n => n.leida);
     this.notificaciones.forEach(n => n.leida = true);
+    this.notificacionService.marcarTodasLeidas().subscribe({
+      error: () => {
+        this.notificaciones.forEach((n, i) => n.leida = previas[i]);
+      }
+    });
+  }
+
+  tituloDe(n: NotificacionDTO): string {
+    return `Nuevo contrato publicado: ${n.nombreContrato || 'Proceso SECOP II'}`;
+  }
+
+  descripcionDe(n: NotificacionDTO): string {
+    const entidad = n.entidadContrato || 'Una entidad';
+    const valor = n.valorContrato ? ` por valor de ${this.formatearValor(n.valorContrato)}` : '';
+    return `${entidad} publicó un proceso${valor}.`;
+  }
+
+  iconoDe(n: NotificacionDTO): string {
+    return ICONOS_POR_CATEGORIA[n.categoria] || 'notifications';
+  }
+
+  formatearValor(valor: number): string {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency', currency: 'COP', maximumFractionDigits: 0
+    }).format(valor);
   }
 
   formatearFecha(fecha: string): string {
@@ -95,5 +146,75 @@ export class NotificacionesComponent implements OnInit {
     if (diff < 60) return `Hace ${diff} min`;
     if (diff < 1440) return `Hace ${Math.floor(diff / 60)}h`;
     return d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+  }
+
+  // ---- Configuración de alertas ----
+
+  cargarSuscripciones(): void {
+    this.cargandoSuscripciones = true;
+    this.notificacionService.listarSuscripciones().subscribe({
+      next: (data) => {
+        this.suscripciones = data;
+        this.cargandoSuscripciones = false;
+      },
+      error: () => { this.cargandoSuscripciones = false; }
+    });
+  }
+
+  guardarAlerta(): void {
+    if (this.guardandoAlerta) return;
+    this.guardandoAlerta = true;
+    this.mensajeAlerta = '';
+
+    const v = this.criteriosForm.value;
+    this.notificacionService.crearSuscripcion({
+      criterio: {
+        palabraClave: v.palabraClave?.trim() || undefined,
+        entidad:      v.entidad?.trim()      || undefined,
+        departamento: v.departamento         || undefined,
+        modalidad:    v.modalidad            || undefined,
+        estado:       v.estado               || undefined,
+        tipoContrato: v.tipoContrato         || undefined,
+        valorMin:     v.valorMin             || undefined,
+        valorMax:     v.valorMax             || undefined
+      },
+      frecuencia: this.frecuenciaAlerta
+    }).subscribe({
+      next: () => {
+        this.mensajeAlertaTipo = 'ok';
+        this.mensajeAlerta = 'Alerta guardada. Te avisaremos cuando aparezcan contratos nuevos con estos filtros.';
+        this.guardandoAlerta = false;
+        this.criteriosForm.reset();
+        this.cargarSuscripciones();
+      },
+      error: () => {
+        this.mensajeAlertaTipo = 'error';
+        this.mensajeAlerta = 'No se pudo guardar la alerta. Intenta de nuevo.';
+        this.guardandoAlerta = false;
+      }
+    });
+  }
+
+  eliminarSuscripcion(s: SuscripcionDTO): void {
+    const previas = this.suscripciones;
+    this.suscripciones = this.suscripciones.filter(x => x.id !== s.id); // optimista
+    this.notificacionService.eliminarSuscripcion(s.id).subscribe({
+      error: () => { this.suscripciones = previas; }
+    });
+  }
+
+  resumenCriterio(s: SuscripcionDTO): string {
+    const c = s.criterio;
+    const partes = [
+      c.palabraClave && `"${c.palabraClave}"`,
+      c.entidad,
+      c.departamento,
+      c.modalidad,
+      c.estado,
+      c.tipoContrato,
+      c.valorMin ? `desde ${this.formatearValor(c.valorMin)}` : null,
+      c.valorMax ? `hasta ${this.formatearValor(c.valorMax)}` : null
+    ].filter(Boolean);
+    return partes.length ? partes.join(' · ') : 'Todos los contratos';
   }
 }

@@ -28,23 +28,56 @@ CREATE TABLE preferencias (
     fecha_creacion TIMESTAMP DEFAULT NOW()
 );
 
--- 3. NOTIFICACIONES PROGRAMADAS
+-- 3. NOTIFICACIONES PROGRAMADAS (suscripciones / criterios recurrentes de alerta)
+-- NOTA: el usuario_id referencia la tabla real que genera Hibernate a partir de la
+-- entidad Usuario (ddl-auto=update), que por @Table(name="Usuario") queda como
+-- "usuario" (singular) y NO como "usuarios" (plural) de este script. Si este script
+-- se corre a mano en una BD nueva, la FK de abajo debe apuntar a esa tabla real.
 CREATE TABLE notificaciones_programadas (
     id SERIAL PRIMARY KEY,
     usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
-    criterio JSONB NOT NULL,   -- ejemplo: {"palabra": "software", "valor_min": 1000000}
-    frecuencia VARCHAR(50) NOT NULL, -- diario, semanal, etc.
+    criterio JSONB NOT NULL,   -- JSON de ContractSearchRequest (palabraClave, entidad, departamento, modalidad, estado, tipoContrato, valorMin, valorMax)
+    frecuencia VARCHAR(50) NOT NULL, -- 'diario' o 'semanal'
     ultima_ejecucion TIMESTAMP,
     activo BOOLEAN DEFAULT TRUE,
     creado_en TIMESTAMP DEFAULT NOW()
 );
 
--- 4. HISTORIAL DE BÚSQUEDAS (OPCIONAL PERO RECOMENDADO)
+-- 3b. NOTIFICACIONES (alertas ya generadas, una fila por contrato detectado)
+-- Guarda un snapshot mínimo del contrato en vez de referenciar una tabla de contratos:
+-- el proyecto no persiste contratos en ningún otro lado (SecopService consulta
+-- datos.gov.co en vivo), así que una tabla de referencia aparte no tendría más
+-- consumidores que este módulo.
+CREATE TABLE notificaciones (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    id_proceso_contrato VARCHAR(100) NOT NULL,
+    nombre_contrato VARCHAR(500),
+    entidad_contrato VARCHAR(300),
+    valor_contrato NUMERIC,
+    fecha_publicacion_contrato VARCHAR(50),
+    url_proceso TEXT,
+    categoria VARCHAR(30) NOT NULL DEFAULT 'contrato',
+    leida BOOLEAN NOT NULL DEFAULT FALSE,
+    creado_en TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uk_notificacion_usuario_contrato UNIQUE (usuario_id, id_proceso_contrato)
+);
+
+-- 4. HISTORIAL DE BÚSQUEDAS / INFORMES
+-- Esta tabla cumple ambos roles: un informe es, literalmente, una búsqueda de contratos
+-- guardada con su snapshot de resultados (Anexo 11: "el informe no es fijo, sino ligado
+-- al historial de consultas"). Se llena SOLA en cada busqueda real contra SECOP II
+-- (filtro manual en /api/secop/buscar o tool-call del chatbot) -- no hay una accion de
+-- usuario que "cree" un informe; "nombre" es una etiqueta auto-generada desde el criterio,
+-- no un titulo escrito a mano.
 CREATE TABLE historial_busquedas (
     id SERIAL PRIMARY KEY,
     usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE SET NULL,
-    criterios JSONB NOT NULL,
+    nombre VARCHAR(255),                -- etiqueta auto-generada desde "criterios" (ej: "Búsqueda: "consultoría"")
+    criterios JSONB NOT NULL,           -- JSON de ContractSearchRequest usado en la busqueda
+    resultados JSONB,                   -- snapshot de List<SecopContratoDTO> al momento de la busqueda
     cantidad_resultados INT,
+    origen VARCHAR(20) NOT NULL DEFAULT 'MANUAL',  -- 'MANUAL' (filtro) o 'CHATBOT' (asistente IA)
     fecha TIMESTAMP DEFAULT NOW()
 );
 
