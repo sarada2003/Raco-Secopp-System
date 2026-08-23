@@ -1,5 +1,7 @@
 package co.edu.unbosque.sistemawebraco.controller;
 
+import co.edu.unbosque.sistemawebraco.entity.Usuario;
+import co.edu.unbosque.sistemawebraco.repository.UsuarioRepository;
 import co.edu.unbosque.sistemawebraco.services.ChatbotService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -7,8 +9,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
@@ -20,6 +25,7 @@ import java.util.Map;
 public class ChatbotController {
 
     private final ChatbotService chatbotService;
+    private final UsuarioRepository usuarioRepository;
 
     /**
      * Recibe un mensaje del usuario y retorna la respuesta del chatbot.
@@ -32,8 +38,10 @@ public class ChatbotController {
     @Operation(summary = "Enviar mensaje al chatbot SECOP",
                description = "Procesa el mensaje del usuario con gpt-4o-mini y retorna una respuesta sobre contratación pública.")
     @PostMapping("/chat")
-    public ResponseEntity<Map<String, String>> chat(@RequestBody ChatRequest body) {
-        String respuesta = chatbotService.chat(body.mensaje());
+    public ResponseEntity<Map<String, String>> chat(@RequestBody ChatRequest body, Authentication authentication) {
+        Usuario usuario = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no encontrado"));
+        String respuesta = chatbotService.chat(usuario, body.mensaje());
         return ResponseEntity.ok(Map.of("respuesta", respuesta));
     }
 

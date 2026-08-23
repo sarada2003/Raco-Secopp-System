@@ -1,5 +1,6 @@
 package co.edu.unbosque.sistemawebraco.services;
 
+import co.edu.unbosque.sistemawebraco.entity.Usuario;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.stereotype.Service;
@@ -43,16 +44,21 @@ public class ChatbotService {
                 .build();
     }
 
-    public String chat(String mensaje) {
-        Future<String> future = executor.submit(() ->
-            chatClient.prompt()
-                .user(mensaje)
-                .options(OpenAiChatOptions.builder()
-                    .toolNames("buscarContratosSecop")
-                    .build())
-                .call()
-                .content()
-        );
+    public String chat(Usuario usuario, String mensaje) {
+        Future<String> future = executor.submit(() -> {
+            ChatContext.set(usuario);
+            try {
+                return chatClient.prompt()
+                    .user(mensaje)
+                    .options(OpenAiChatOptions.builder()
+                        .toolNames("buscarContratosSecop")
+                        .build())
+                    .call()
+                    .content();
+            } finally {
+                ChatContext.clear();
+            }
+        });
 
         try {
             return future.get(90, TimeUnit.SECONDS);
