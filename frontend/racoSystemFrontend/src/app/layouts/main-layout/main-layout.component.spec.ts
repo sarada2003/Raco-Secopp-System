@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { MainLayoutComponent } from './main-layout.component';
 
@@ -8,7 +9,8 @@ describe('MainLayoutComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [MainLayoutComponent]
+      declarations: [MainLayoutComponent],
+      schemas: [NO_ERRORS_SCHEMA] // el template usa <app-navbar>, fuera de alcance en este smoke test
     });
     fixture = TestBed.createComponent(MainLayoutComponent);
     component = fixture.componentInstance;

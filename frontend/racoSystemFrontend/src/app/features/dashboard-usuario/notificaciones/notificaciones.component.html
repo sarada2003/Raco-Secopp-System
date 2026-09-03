@@ -46,37 +46,162 @@
     </button>
   </div>
 
-  <!-- Lista -->
-  <div class="notif-list">
-    <div
-      class="notif-item"
-      *ngFor="let n of filtradas"
-      [class.no-leida]="!n.leida"
-      (click)="marcarLeida(n)"
-    >
-      <div class="notif-icon" [ngClass]="'cat-' + n.categoria">
-        <mat-icon>{{ n.icono }}</mat-icon>
+  <!-- ===== Pestaña "Sistema": configuración de alertas ===== -->
+  <div class="config-wrap" *ngIf="filtroActivo === 'sistema'">
+
+    <form [formGroup]="criteriosForm" (ngSubmit)="guardarAlerta()" class="filtros-panel">
+      <h3 class="config-titulo">Crear nueva alerta</h3>
+      <p class="config-subtitulo">Te avisaremos (en la interfaz y por correo) cuando se publique un contrato nuevo que coincida con estos filtros.</p>
+
+      <div class="filtros-grid">
+        <div class="field-group">
+          <label>Palabra clave</label>
+          <input formControlName="palabraClave" type="text" placeholder="Ej: consultoría, obras..." class="input-dark" />
+        </div>
+        <div class="field-group">
+          <label>Entidad</label>
+          <input formControlName="entidad" type="text" placeholder="Nombre de la entidad..." class="input-dark" />
+        </div>
+        <div class="field-group">
+          <label>Departamento</label>
+          <select formControlName="departamento" class="input-dark">
+            <option value="">Todos los departamentos</option>
+            <option *ngFor="let d of departamentos" [value]="d">{{ d }}</option>
+          </select>
+        </div>
       </div>
 
-      <div class="notif-body">
-        <div class="notif-top">
-          <span class="notif-titulo">{{ n.titulo }}</span>
-          <span class="notif-fecha">{{ formatearFecha(n.fecha) }}</span>
+      <div class="filtros-grid">
+        <div class="field-group">
+          <label>Modalidad de contratación</label>
+          <select formControlName="modalidad" class="input-dark">
+            <option value="">Todas las modalidades</option>
+            <option *ngFor="let m of modalidades" [value]="m">{{ m }}</option>
+          </select>
         </div>
-        <p class="notif-desc">{{ n.descripcion }}</p>
-        <div class="notif-footer">
-          <span class="cat-chip" [ngClass]="'chip-' + n.categoria">
-            {{ n.categoria === 'contrato' ? 'Contrato' : n.categoria === 'alerta' ? 'Alerta' : 'Sistema' }}
-          </span>
-          <span class="no-leida-dot" *ngIf="!n.leida"></span>
+        <div class="field-group">
+          <label>Estado del proceso</label>
+          <select formControlName="estado" class="input-dark">
+            <option value="">Todos los estados</option>
+            <option *ngFor="let e of estados" [value]="e">{{ e }}</option>
+          </select>
         </div>
+        <div class="field-group">
+          <label>Tipo de contrato</label>
+          <select formControlName="tipoContrato" class="input-dark">
+            <option value="">Todos los tipos</option>
+            <option *ngFor="let t of tiposContrato" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filtros-grid">
+        <div class="field-group">
+          <label>Valor mínimo (COP)</label>
+          <input formControlName="valorMin" type="number" placeholder="Ej: 50000000" class="input-dark" min="0" />
+        </div>
+        <div class="field-group">
+          <label>Valor máximo (COP)</label>
+          <input formControlName="valorMax" type="number" placeholder="Ej: 500000000" class="input-dark" min="0" />
+        </div>
+        <div class="field-group">
+          <label>Frecuencia</label>
+          <select [(ngModel)]="frecuenciaAlerta" [ngModelOptions]="{standalone: true}" class="input-dark">
+            <option value="diario">Diaria</option>
+            <option value="semanal">Semanal</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filtros-actions">
+        <button type="submit" class="btn-primary" [disabled]="guardandoAlerta">
+          <mat-icon>notifications_active</mat-icon>
+          Guardar alerta
+        </button>
+      </div>
+
+      <p class="mensaje-alerta" [class.error]="mensajeAlertaTipo === 'error'" *ngIf="mensajeAlerta">
+        {{ mensajeAlerta }}
+      </p>
+    </form>
+
+    <h3 class="config-titulo suscripciones-titulo">Tus alertas activas</h3>
+
+    <div class="state-center" *ngIf="cargandoSuscripciones">
+      <div class="spinner"></div>
+    </div>
+
+    <div class="suscripciones-list" *ngIf="!cargandoSuscripciones">
+      <div class="suscripcion-item" *ngFor="let s of suscripciones">
+        <div class="suscripcion-body">
+          <span class="suscripcion-criterio">{{ resumenCriterio(s) }}</span>
+          <span class="suscripcion-meta">Frecuencia: {{ s.frecuencia === 'semanal' ? 'semanal' : 'diaria' }}</span>
+        </div>
+        <button class="btn-ghost" (click)="eliminarSuscripcion(s)" title="Desactivar alerta">
+          <mat-icon>delete_outline</mat-icon>
+        </button>
+      </div>
+
+      <div class="state-empty" *ngIf="suscripciones.length === 0">
+        <mat-icon>notifications_off</mat-icon>
+        <p>Todavía no tienes alertas configuradas.</p>
       </div>
     </div>
   </div>
 
-  <div class="state-empty" *ngIf="filtradas.length === 0">
-    <mat-icon>notifications_none</mat-icon>
-    <p>No hay notificaciones en esta categoría.</p>
-  </div>
+  <!-- ===== Pestañas "Todas" / "Contratos" / "Alertas": lista de notificaciones ===== -->
+  <ng-container *ngIf="filtroActivo !== 'sistema'">
+
+    <!-- Estado: cargando -->
+    <div class="state-center" *ngIf="cargando">
+      <div class="spinner"></div>
+      <p>Cargando notificaciones...</p>
+    </div>
+
+    <!-- Estado: error -->
+    <div class="state-error" *ngIf="error && !cargando">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button class="btn-ghost" (click)="cargar()">Reintentar</button>
+    </div>
+
+    <!-- Lista -->
+    <div class="notif-list" *ngIf="!cargando && !error">
+      <div
+        class="notif-item"
+        *ngFor="let n of filtradas"
+        [class.no-leida]="!n.leida"
+        (click)="marcarLeida(n)"
+      >
+        <div class="notif-icon" [ngClass]="'cat-' + n.categoria">
+          <mat-icon>{{ iconoDe(n) }}</mat-icon>
+        </div>
+
+        <div class="notif-body">
+          <div class="notif-top">
+            <span class="notif-titulo">{{ tituloDe(n) }}</span>
+            <span class="notif-fecha">{{ formatearFecha(n.creadoEn) }}</span>
+          </div>
+          <p class="notif-desc">{{ descripcionDe(n) }}</p>
+          <div class="notif-footer">
+            <span class="cat-chip" [ngClass]="'chip-' + n.categoria">
+              {{ n.categoria === 'contrato' ? 'Contrato' : n.categoria === 'alerta' ? 'Alerta' : 'Sistema' }}
+            </span>
+            <a *ngIf="n.urlProceso" [href]="n.urlProceso" target="_blank" rel="noopener noreferrer"
+               class="notif-link" (click)="$event.stopPropagation()">
+              <mat-icon>open_in_new</mat-icon> Ver proceso
+            </a>
+            <span class="no-leida-dot" *ngIf="!n.leida"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="state-empty" *ngIf="filtradas.length === 0">
+        <mat-icon>notifications_none</mat-icon>
+        <p>No hay notificaciones en esta categoría.</p>
+      </div>
+    </div>
+
+  </ng-container>
 
 </div>

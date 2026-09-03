@@ -1,6 +1,10 @@
 package co.edu.unbosque.sistemawebraco.services;
 
+import co.edu.unbosque.sistemawebraco.entity.Usuario;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.metadata.Usage;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +14,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+@Slf4j
 @Service
 public class ChatbotService {
 
@@ -43,16 +48,23 @@ public class ChatbotService {
                 .build();
     }
 
-    public String chat(String mensaje) {
-        Future<String> future = executor.submit(() ->
-            chatClient.prompt()
-                .user(mensaje)
-                .options(OpenAiChatOptions.builder()
-                    .toolNames("buscarContratosSecop")
-                    .build())
-                .call()
-                .content()
-        );
+    public String chat(Usuario usuario, String mensaje) {
+        Future<String> future = executor.submit(() -> {
+            ChatContext.set(usuario);
+            try {
+                ChatResponse response = chatClient.prompt()
+                    .user(mensaje)
+                    .options(OpenAiChatOptions.builder()
+                        .toolNames("buscarContratosSecop")
+                        .build())
+                    .call()
+                    .chatResponse();
+                logTokenUsage(response);
+                return response.getResult().getOutput().getText();
+            } finally {
+                ChatContext.clear();
+            }
+        });
 
         try {
             return future.get(90, TimeUnit.SECONDS);
@@ -62,5 +74,19 @@ public class ChatbotService {
         } catch (Exception e) {
             return "Ocurrió un error al procesar tu consulta. Por favor intenta de nuevo.";
         }
+    }
+
+    /**
+     * Registra el consumo de tokens de la interacción para poder reportar rendimiento/costo.
+     *
+     * <p>Solo se loguean conteos numéricos (prompt/completion/total). El mensaje del usuario
+     * y la respuesta del modelo nunca se incluyen aquí: los usuarios consultan contratos
+     * reales a través del chatbot y este log no debe convertirse en un registro de esas
+     * conversaciones.</p>
+     */
+    private void logTokenUsage(ChatResponse response) {
+        Usage usage = response.getMetadata().getUsage();
+        log.info("Chatbot tokens - prompt={}, completion={}, total={}",
+                usage.getPromptTokens(), usage.getCompletionTokens(), usage.getTotalTokens());
     }
 }

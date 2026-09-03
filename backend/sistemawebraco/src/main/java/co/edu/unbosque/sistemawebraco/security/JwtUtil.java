@@ -79,7 +79,10 @@ public class JwtUtil {
      *
      * <p>Verifica la firma HMAC-SHA512 con la clave secreta configurada.
      * Captura cualquier {@link JwtException} (token malformado, expirado, firma inválida)
-     * y retorna {@code false} en lugar de propagar la excepción.</p>
+     * y retorna {@code false} en lugar de propagar la excepción. También captura
+     * {@link IllegalArgumentException}, que jjwt lanza (en vez de {@code JwtException}) para
+     * un token nulo o vacío — sin este catch, un header {@code "Authorization: Bearer "} sin
+     * token después del prefijo tumbaría la petición con un 500 en vez del 401 esperado.</p>
      *
      * @param token token JWT a validar (sin el prefijo "Bearer ")
      * @return {@code true} si el token es válido y vigente; {@code false} en caso contrario
@@ -91,7 +94,7 @@ public class JwtUtil {
                     .build()
                     .parseClaimsJws(token);
             return true;
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }

@@ -2,6 +2,9 @@ package co.edu.unbosque.sistemawebraco.controller;
 
 import co.edu.unbosque.sistemawebraco.dto.ContractSearchRequest;
 import co.edu.unbosque.sistemawebraco.dto.SecopContratoDTO;
+import co.edu.unbosque.sistemawebraco.entity.Usuario;
+import co.edu.unbosque.sistemawebraco.repository.UsuarioRepository;
+import co.edu.unbosque.sistemawebraco.services.InformeService;
 import co.edu.unbosque.sistemawebraco.services.SecopService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,9 +30,13 @@ import java.util.List;
 public class SecopController {
 
     private final SecopService secopService;
+    private final InformeService informeService;
+    private final UsuarioRepository usuarioRepository;
 
-    public SecopController(SecopService secopService) {
+    public SecopController(SecopService secopService, InformeService informeService, UsuarioRepository usuarioRepository) {
         this.secopService = secopService;
+        this.informeService = informeService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     // -------------------------------------------------------
@@ -112,7 +120,10 @@ public class SecopController {
                             }
                     )
             )
-            @RequestBody ContractSearchRequest request) {
-        return secopService.buscarContratos(request);
+            @RequestBody ContractSearchRequest request, Authentication authentication) {
+        List<SecopContratoDTO> resultados = secopService.buscarContratos(request);
+        usuarioRepository.findByEmail(authentication.getName())
+                .ifPresent(usuario -> informeService.registrarBusquedaManual(usuario, request, resultados));
+        return resultados;
     }
 }

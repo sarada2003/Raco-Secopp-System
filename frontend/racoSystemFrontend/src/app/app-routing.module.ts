@@ -12,7 +12,7 @@ import { DashboardInicioComponent } from './features/dashboard-usuario/inicio/in
 import { ContratosComponent } from './features/dashboard-usuario/contratos/contratos.component';
 import { ChatbotComponent } from './features/dashboard-usuario/chatbot/chatbot.component';
 import { NotificacionesComponent } from './features/dashboard-usuario/notificaciones/notificaciones.component';
-import { PagosComponent } from './features/dashboard-usuario/pagos/pagos.component';
+import { InformesComponent } from './features/dashboard-usuario/informes/informes.component';
 
 const routes: Routes = [
   {
@@ -42,7 +42,7 @@ const routes: Routes = [
       { path: 'contratos', component: ContratosComponent },
       { path: 'chatbot', component: ChatbotComponent },
       { path: 'notificaciones', component: NotificacionesComponent },
-      { path: 'pagos', component: PagosComponent },
+      { path: 'informes', component: InformesComponent },
       { path: 'perfil', component: DashboardInicioComponent }
     ]
   },

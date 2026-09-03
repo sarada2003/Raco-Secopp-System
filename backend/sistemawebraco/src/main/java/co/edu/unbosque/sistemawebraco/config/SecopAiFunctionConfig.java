@@ -3,6 +3,8 @@ package co.edu.unbosque.sistemawebraco.config;
 import co.edu.unbosque.sistemawebraco.dto.ContractSearchRequest;
 import co.edu.unbosque.sistemawebraco.dto.SecopContratoDTO;
 import co.edu.unbosque.sistemawebraco.dto.SecopSearchInput;
+import co.edu.unbosque.sistemawebraco.services.ChatContext;
+import co.edu.unbosque.sistemawebraco.services.InformeService;
 import co.edu.unbosque.sistemawebraco.services.SecopService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +21,7 @@ public class SecopAiFunctionConfig {
     @Description("Busca contratos públicos reales publicados en SECOP II (Colombia Compra Eficiente). " +
                  "Úsala cuando el usuario quiera buscar, consultar, encontrar o listar contratos del Estado colombiano. " +
                  "Todos los parámetros son opcionales: si el usuario no especifica alguno, omítelo.")
-    public Function<SecopSearchInput, String> buscarContratosSecop(SecopService secopService) {
+    public Function<SecopSearchInput, String> buscarContratosSecop(SecopService secopService, InformeService informeService) {
         return input -> {
             try {
                 ContractSearchRequest req = new ContractSearchRequest();
@@ -32,6 +34,7 @@ public class SecopAiFunctionConfig {
                 List<SecopContratoDTO> contratos;
                 try {
                     contratos = secopService.buscarContratos(req);
+                    informeService.registrarBusquedaChatbot(ChatContext.get(), req, contratos);
                 } catch (ResponseStatusException rse) {
                     return "No pude consultar SECOP II en este momento (la API tardó demasiado). " +
                            "Puedo responder preguntas generales sobre contratación pública.";

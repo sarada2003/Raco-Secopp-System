@@ -203,6 +203,207 @@ $subtext: #888888;
   border-radius: 50%;
 }
 
+/* ---- Configuración de alertas (pestaña "Sistema") ---- */
+.config-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filtros-panel {
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.config-titulo {
+  color: $text;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.suscripciones-titulo {
+  margin-top: 0.5rem;
+}
+
+.config-subtitulo {
+  color: $subtext;
+  font-size: 0.82rem;
+  margin: -0.5rem 0 0;
+}
+
+.filtros-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.2rem;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  label {
+    color: $subtext;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+}
+
+.input-dark {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  color: $text;
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+
+  &::placeholder { color: #555; }
+  &:focus { outline: none; border-color: rgba(229, 196, 106, 0.5); }
+}
+
+select.input-dark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  padding-right: 2.2rem;
+  cursor: pointer;
+
+  option { background: #1a1a1a; color: $text; }
+}
+
+.filtros-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: $gold;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+
+  mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+
+  &:hover:not(:disabled) { background: $gold-dark; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.mensaje-alerta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: $gold;
+
+  &.error { color: #e57373; }
+}
+
+.suscripciones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.suscripcion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: $card;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 0.9rem 1.2rem;
+}
+
+.suscripcion-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.suscripcion-criterio {
+  color: $text;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.suscripcion-meta {
+  color: $subtext;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+/* ---- States ---- */
+.state-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 0;
+  gap: 1rem;
+  color: $subtext;
+  font-size: 0.9rem;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #222;
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.state-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 0;
+  gap: 0.8rem;
+  color: #e57373;
+
+  mat-icon { font-size: 2rem; width: 2rem; height: 2rem; }
+  p { font-size: 0.9rem; text-align: center; margin: 0; }
+}
+
+.notif-link {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: $gold;
+  font-size: 0.78rem;
+  text-decoration: none;
+  margin-left: auto;
+
+  mat-icon { font-size: 0.95rem; width: 0.95rem; height: 0.95rem; }
+  &:hover { text-decoration: underline; }
+}
+
 /* ---- Empty ---- */
 .state-empty {
   display: flex;

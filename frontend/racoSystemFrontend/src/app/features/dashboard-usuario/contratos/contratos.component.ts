@@ -25,7 +25,7 @@ export class ContratosComponent implements OnInit {
     'Cundinamarca', 'Guainía', 'Guaviare', 'Huila', 'La Guajira', 'Magdalena',
     'Meta', 'Nariño', 'Norte de Santander', 'Putumayo', 'Quindío', 'Risaralda',
     'San Andrés y Providencia', 'Santander', 'Sucre', 'Tolima', 'Valle del Cauca',
-    'Vaupés', 'Vichada', 'Bogotá D.C.'
+    'Vaupés', 'Vichada', 'Distrito Capital de Bogotá'
   ];
 
   readonly modalidades = [

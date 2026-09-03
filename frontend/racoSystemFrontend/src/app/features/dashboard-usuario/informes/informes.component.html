@@ -1,0 +1,163 @@
+<div class="informes-wrap">
+
+  <div class="page-header">
+    <div>
+      <h2>Informes</h2>
+      <p>Se generan solos a partir de tus búsquedas de contratos SECOP II, hechas por filtro o por el chatbot</p>
+    </div>
+  </div>
+
+  <p class="mensaje-error" *ngIf="error">{{ error }}</p>
+
+  <!-- Vista previa del informe activo -->
+  <div class="preview-panel" *ngIf="informeActivo">
+    <div class="preview-header">
+      <div>
+        <h3>{{ informeActivo.nombre }}</h3>
+        <p>{{ formatearFecha(informeActivo.fecha) }} — {{ informeActivo.cantidadResultados }} resultado(s)</p>
+      </div>
+      <button class="btn-primary" (click)="descargarPDF(informeActivo)">
+        <mat-icon>picture_as_pdf</mat-icon>
+        Descargar PDF
+      </button>
+    </div>
+
+    <div class="state-center" *ngIf="cargandoDetalle">
+      <div class="spinner"></div>
+    </div>
+
+    <ng-container *ngIf="!cargandoDetalle">
+
+      <!-- KPIs -->
+      <div class="kpi-row" *ngIf="kpiTotalContratos > 0">
+        <div class="kpi-tile">
+          <span class="kpi-label">Total de contratos</span>
+          <span class="kpi-value">{{ kpiTotalContratos }}</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-label">Valor total adjudicado</span>
+          <span class="kpi-value">{{ formatearValorCompacto(kpiValorTotal) }}</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-label">Departamento líder</span>
+          <span class="kpi-value kpi-value--texto" [title]="kpiDepartamentoLider">{{ kpiDepartamentoLider }}</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-label">Modalidad más usada</span>
+          <span class="kpi-value kpi-value--texto" [title]="kpiModalidadLider">{{ kpiModalidadLider }}</span>
+        </div>
+      </div>
+
+      <!-- Gráficas de barras -->
+      <div class="charts-grid" *ngIf="kpiTotalContratos > 0">
+
+        <div class="chart-card">
+          <h4>Contratos por departamento</h4>
+          <div class="bar-row" *ngFor="let d of porDepartamento">
+            <span class="bar-label" [title]="d.label">{{ d.label }}</span>
+            <div class="bar-track">
+              <div class="bar-fill" [style.width.%]="d.pct"></div>
+            </div>
+            <span class="bar-value">{{ d.valorLabel }}</span>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h4>Contratos por modalidad</h4>
+          <div class="bar-row" *ngFor="let d of porModalidad">
+            <span class="bar-label" [title]="d.label">{{ d.label }}</span>
+            <div class="bar-track">
+              <div class="bar-fill" [style.width.%]="d.pct"></div>
+            </div>
+            <span class="bar-value">{{ d.valorLabel }}</span>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h4>Contratos por estado</h4>
+          <div class="bar-row" *ngFor="let d of porEstado">
+            <span class="bar-label" [title]="d.label">{{ d.label }}</span>
+            <div class="bar-track">
+              <div class="bar-fill" [style.width.%]="d.pct"></div>
+            </div>
+            <span class="bar-value">{{ d.valorLabel }}</span>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h4>Valor adjudicado por entidad</h4>
+          <div class="bar-row" *ngFor="let d of porEntidadValor">
+            <span class="bar-label" [title]="d.label">{{ d.label }}</span>
+            <div class="bar-track">
+              <div class="bar-fill" [style.width.%]="d.pct"></div>
+            </div>
+            <span class="bar-value">{{ d.valorLabel }}</span>
+          </div>
+        </div>
+
+      </div>
+
+      <h4 class="detalle-titulo" *ngIf="informeActivo.resultados.length > 0">Detalle</h4>
+    </ng-container>
+
+    <div class="tabla-scroll" *ngIf="!cargandoDetalle">
+      <table class="tabla-resultados">
+        <thead>
+          <tr>
+            <th>Entidad</th>
+            <th>Proceso</th>
+            <th>Departamento</th>
+            <th>Estado</th>
+            <th>Valor</th>
+            <th>Publicación</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of informeActivo.resultados">
+            <td>{{ c.entidad || '—' }}</td>
+            <td class="col-proceso">{{ c.nombre_del_procedimiento || '—' }}</td>
+            <td>{{ c.departamento_entidad || '—' }}</td>
+            <td>{{ c.estado_del_procedimiento || '—' }}</td>
+            <td>{{ c.valor_total_adjudicacion ? formatearValor(c.valor_total_adjudicacion) : '—' }}</td>
+            <td>{{ formatearFecha(c.fecha_de_publicacion_del || '') }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="state-empty" *ngIf="informeActivo.resultados.length === 0">
+        <mat-icon>search_off</mat-icon>
+        <p>Este informe no tiene resultados.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historial de búsquedas (auto-generado) -->
+  <h3 class="lista-titulo">Historial de búsquedas</h3>
+
+  <div class="state-center" *ngIf="cargandoInformes">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="informes-list" *ngIf="!cargandoInformes">
+    <div class="informe-item" *ngFor="let i of informes" [class.activo]="informeActivoId === i.id">
+      <div class="informe-body" (click)="verInforme(i)">
+        <span class="informe-nombre">
+          {{ i.nombre }}
+          <span class="informe-origen" [class.chatbot]="i.origen === 'CHATBOT'">
+            {{ i.origen === 'CHATBOT' ? 'Chatbot' : 'Manual' }}
+          </span>
+        </span>
+        <span class="informe-meta">{{ formatearFecha(i.fecha) }} · {{ i.cantidadResultados }} resultado(s)</span>
+      </div>
+      <button class="btn-ghost" (click)="descargarPDFDesdeLista(i)" title="Descargar PDF">
+        <mat-icon>picture_as_pdf</mat-icon>
+      </button>
+    </div>
+
+    <div class="state-empty" *ngIf="informes.length === 0">
+      <mat-icon>description</mat-icon>
+      <p>Todavía no tienes búsquedas registradas. Busca contratos desde el filtro o el chatbot y aparecerán aquí.</p>
+    </div>
+  </div>
+
+</div>
