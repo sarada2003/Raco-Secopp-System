@@ -161,9 +161,9 @@
             <mat-icon>location_on</mat-icon>
             {{ c.departamento_entidad }}<span *ngIf="c.ciudad_entidad">, {{ c.ciudad_entidad }}</span>
           </span>
-          <span class="meta-chip valor" *ngIf="c.valor_total_adjudicacion">
+          <span class="meta-chip valor">
             <mat-icon>payments</mat-icon>
-            {{ formatearValor(c.valor_total_adjudicacion) }}
+            {{ c.valor_total_adjudicacion ? formatearValor(c.valor_total_adjudicacion) : 'Sin adjudicar' }}
           </span>
           <span class="meta-chip modalidad" *ngIf="c.modalidad_de_contratacion">
             <mat-icon>gavel</mat-icon>

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -70,6 +71,12 @@ public class InformeService {
         registrarBusqueda(usuario, criterio, resultados, ORIGEN_MANUAL);
     }
 
+    /**
+     * Asíncrono: se llama desde la herramienta del chatbot, que todavía tiene que devolverle
+     * los contratos al modelo para que redacte la respuesta; el INSERT no tiene por qué
+     * esperar en ese camino. {@link #registrarBusqueda} ya captura sus propias excepciones.
+     */
+    @Async
     public void registrarBusquedaChatbot(Usuario usuario, ContractSearchRequest criterio, List<SecopContratoDTO> resultados) {
         registrarBusqueda(usuario, criterio, resultados, ORIGEN_CHATBOT);
     }

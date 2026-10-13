@@ -118,7 +118,7 @@
             <td class="col-proceso">{{ c.nombre_del_procedimiento || '—' }}</td>
             <td>{{ c.departamento_entidad || '—' }}</td>
             <td>{{ c.estado_del_procedimiento || '—' }}</td>
-            <td>{{ c.valor_total_adjudicacion ? formatearValor(c.valor_total_adjudicacion) : '—' }}</td>
+            <td>{{ c.valor_total_adjudicacion ? formatearValor(c.valor_total_adjudicacion) : 'Sin adjudicar' }}</td>
             <td>{{ formatearFecha(c.fecha_de_publicacion_del || '') }}</td>
           </tr>
         </tbody>

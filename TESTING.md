@@ -5,7 +5,9 @@ resultados obtenidos. Cubre pruebas unitarias, de seguridad y de rendimiento en 
 pruebas unitarias en frontend.
 
 **Fuera de alcance (deliberado):** pruebas cronometradas/comparativas con usuarios reales de
-la empresa — esas se hacen manualmente y no están automatizadas aquí.
+la empresa — esas se hacen manualmente y no están automatizadas aquí. Como línea base previa a
+esas pruebas, §9 registra una comparación cronometrada SECOP II vs. RACO ejecutada en el
+navegador (no con usuarios reales).
 
 Última corrida verificada: 2026-09-01 — **79/79** tests backend y **36/36** tests frontend en
 verde, más los dos benchmarks de rendimiento con resultados reales (ver [§8](#8-estado-de-la-suite-de-pruebas)).
@@ -78,7 +80,7 @@ AssertJ (ya incluidos en `spring-boot-starter-test`). Ningún test pega a una AP
 | `NotificacionServiceTest` | Ownership en `marcarLeida`/`eliminarSuscripcion` (404 si el id es de otro usuario), deduplicación y normalización de frecuencia en `crearSuscripcion`. |
 | `InformeServiceTest` | Ownership en `obtener`, que un fallo al guardar el historial nunca se propaga, y el fallback ante JSON corrupto. |
 | `AuthServiceTest` | Login (éxito, email inexistente, password incorrecta), registro (éxito, email duplicado), `obtenerUsuarioDesdeToken`, login con Google. |
-| `SecopAiFunctionConfigTest` | La herramienta `buscarContratosSecop` que el chatbot invoca vía function-calling: formato de respuesta, mensaje de "sin resultados", manejo de timeout de SECOP y de errores inesperados sin propagar la excepción al modelo, y que registra la búsqueda en el historial. |
+| `SecopAiFunctionConfigTest` | La herramienta `buscarContratosSecop` que el chatbot invoca vía function-calling: formato de respuesta, mensaje de "sin resultados", manejo de timeout de SECOP y de errores inesperados sin propagar la excepción al modelo, que registra la búsqueda en el historial del usuario recibido por `ToolContext` (y no falla si no hay contexto), y que mide su tiempo en la métrica `chatbot.herramienta.secop`. |
 
 ## 3. Pruebas de seguridad (backend)
 
@@ -91,7 +93,7 @@ generado de verdad, sin levantar base de datos.
 | `SecopControllerSecurityTest` | 401 sin token / con token inválido; 200 con token válido. |
 | `NotificacionControllerSecurityTest` | 401 sin token; que el id de usuario usado en **todas** las operaciones (incluida la verificación de dueño) sale siempre del JWT, nunca de un parámetro que el cliente controle — no hay forma de pedir "marca como leída la notificación de otro" porque no existe un campo de usuario en la petición. |
 | `InformeControllerSecurityTest` | 404 al pedir el informe de otro usuario; 200 y uso correcto del id del token para el propio. |
-| `ChatbotControllerSecurityTest` | 401 sin token; 400 con mensaje vacío o >2000 caracteres; 200 con mensaje válido. |
+| `ChatbotControllerSecurityTest` | 401 sin token; 400 con mensaje vacío o >2000 caracteres; 200 con mensaje válido. Para `/chat/stream` (SSE): 401 sin token, 400 con mensaje vacío, que los fragmentos llegan como eventos y cierran con `fin` (esto ejercita también el dispatch ASYNC, permitido en `SecurityConfig`), y que un timeout llega como evento `error` con el mensaje para el usuario. |
 | `AuthControllerSecurityTest` | `/login` y `/register` son públicos; `/me` exige JWT. |
 
 **Decisión de diseño: 404 en vez de 403 para violaciones de ownership.** El sistema no
@@ -130,6 +132,16 @@ Sin herramienta externa (JMeter, etc.), dos mecanismos complementarios:
 `GET /actuator/metrics/http.server.requests`, con tiempos agregados (count, sum, max) por
 endpoint automáticamente, sin código adicional. Útil para observar el sistema corriendo en
 cualquier momento.
+
+Para el chatbot hay además métricas propias que desglosan el tiempo por fase:
+
+| Métrica | Qué mide |
+|---|---|
+| `chatbot.respuesta` (tags `modo`=`completa`/`stream`, `resultado`) | Tiempo total de la respuesta. |
+| `chatbot.primer.fragmento` | En streaming: tiempo hasta el primer texto que ve el usuario. |
+| `chatbot.herramienta.secop` (tag `resultado`) | Tiempo de la herramienta `buscarContratosSecop` (consulta a SECOP II). |
+
+Ej.: `GET /actuator/metrics/chatbot.respuesta?tag=modo:stream` (requiere JWT).
 
 **b) Benchmarks manuales (`SecopSearchPerformanceTest`, `ChatbotPerformanceTest`):**
 tag JUnit `perf`, excluido del suite por defecto en `build.gradle` (pegan a datos.gov.co y a
@@ -202,6 +214,8 @@ amplió su cobertura de comportamiento porque no estaban en el alcance pedido.
 - **Reporte de pruebas de rendimiento** → §4: metodología (Actuator + benchmarks manuales),
   cómo generarlo, y la nota sobre tokens del chatbot. Los archivos en `build/perf-results/`
   generados al correr los benchmarks son el anexo con números reales.
+- **Comparación de tiempos SECOP II vs. RACO** → §9: tres búsquedas cronometradas en el
+  navegador (SECOP II directo vs. filtro y chat de RACO) y hallazgos de calidad del chatbot.
 
 ---
 
@@ -245,7 +259,9 @@ muestras por escenario:
 | Combinada (palabra clave + entidad + valor) | 10 | 534 | 480 | 691 | 691 |
 
 **`ChatbotPerformanceTest`** — POST `/api/chatbot/chat` contra gpt-4o-mini real (con y sin
-tool-call a SECOP II), 3 muestras por mensaje:
+tool-call a SECOP II), 3 muestras por mensaje. Esta tabla es la línea base **antes** del
+streaming; el benchmark ahora mide también `/api/chatbot/chat/stream` (primer fragmento y
+respuesta completa) — al volver a correrlo, reemplazar esta tabla por la nueva:
 
 | Escenario | Muestras | Promedio (ms) | Mín (ms) | P95 (ms) | Máx (ms) | Tokens (prompt/completion/total) |
 |---|---|---|---|---|---|---|
@@ -260,3 +276,72 @@ tabla en el reporte de tesis.
 
 Archivos fuente de estas tablas: `backend/sistemawebraco/build/perf-results/secop-search-performance.md`
 y `.../chatbot-performance.md` (regenerados en cada corrida de los benchmarks).
+
+---
+
+## 9. Comparación cronometrada: SECOP II directo vs. RACO
+
+Corrida el **2026-10-12** (≈23:44–23:58, hora Colombia) en Chrome, contra
+community.secop.gov.co (buscador público de procesos) y RACO local (`localhost:4200` +
+backend en `:8080`, usuario ya autenticado). Tres búsquedas distintas; cada una se hizo en
+SECOP II, en el filtro de RACO (*Contratos SECOP*) y en el chat de RACO (*Chatbot IA*).
+
+**Cómo se midió:**
+
+- **Inicio:** página de búsqueda ya cargada y vacía. **Fin:** resultados visibles en pantalla.
+  En RACO el fin se tomó con un observador en la página (`performance.now()`), que además da
+  el tiempo de respuesta del sistema (clic en *Buscar* / *Enter* → resultados). En SECOP II el
+  fin se tomó al verificar los resultados, así que esos tiempos tienen hasta ~1 s de holgura.
+- Las acciones (clics, escritura) se ejecutaron de forma automatizada en el navegador, no las
+  hizo una persona. La automatización escribe y hace clic más rápido que un usuario, así que **los tiempos absolutos
+  subestiman los de un usuario real**; lo comparable es la diferencia entre las tres vías y
+  el número de pasos que exige cada una.
+- El reCAPTCHA que SECOP II exige antes de buscar **no se cuenta** (lo resolvió una persona
+  antes de cronometrar). Un usuario real sí lo paga.
+- Una sola muestra por fase.
+
+### Resultados
+
+| Prueba | Búsqueda | SECOP II directo | RACO — filtro | RACO — chat |
+|---|---|---|---|---|
+| 1 | Contratos de **tecnología** en **Antioquia** | **5,4 s** · 3 pasos · 5 resultados en la 1.ª página | **6,1 s** (sistema 3,3 s) · 4 pasos · 20 resultados | **9,1 s** (escribir 2,1 s + respuesta 7,0 s; primer texto a 3,4 s) · 5 contratos |
+| 2 | Contratos de **obra** del **IDU** | **≈44 s** · 9 pasos · 2 resultados | **3,9 s** (sistema 0,55 s) · 5 pasos · 20 resultados | **8,7 s** (escribir 2,1 s + respuesta 6,6 s; primer texto a 2,1 s) · 5 contratos |
+| 3 | **Suministro** en **Cundinamarca** por **más de $500 M** | **> 60 s, incompleta** · 36+ pasos · 10 encontrados en 170 revisados, quedaban más | **4,9 s** (sistema 0,85 s) · 6 pasos · 20 resultados, todos ≥ $500 M | **10,9 s** (escribir 2,1 s + respuesta 8,7 s; primer texto a 2,5 s) · 5 filas, 2 contratos distintos |
+
+**Por qué SECOP II se dispara en las pruebas 2 y 3:**
+
+- **Prueba 2 — entidad:** el campo *Datos de la entidad* no acepta texto libre; se llena con
+  una ventana de búsqueda que para "Instituto de Desarrollo Urbano" devuelve **5 entidades
+  homónimas**. Escoger la correcta exige reconocer el NIT (899999081). En RACO basta escribir
+  el nombre en *Entidad*.
+- **Prueba 3 — valor:** SECOP II **no tiene filtro por cuantía**. La búsqueda por descripción
+  y región tarda 12,5 s, pero luego hay que revisar la columna *Cuantía* fila por fila,
+  cargando 5 resultados más con cada *Ver más*. Tras 31 clics en *Ver más* (60 s, a velocidad
+  de máquina) iban 170 procesos revisados y 10 de más de $500 M, y aún quedaban más. En RACO
+  es un campo (*Valor mínimo*) y los 20 resultados ya vienen filtrados.
+- En la prueba 1 (palabra clave + región, los dos filtros que SECOP II sí tiene en texto
+  libre) SECOP II y el filtro de RACO quedan prácticamente empatados.
+
+**Los conteos de resultados no son comparables entre columnas:** el buscador de SECOP II
+muestra por defecto solo procesos publicados en los últimos 3 meses, y RACO consulta el
+dataset de datos abiertos (`datos.gov.co`) con sus propios criterios y una página de 20.
+
+### Hallazgos de calidad del chatbot (a corregir)
+
+El chat respondió rápido en las tres pruebas (primer texto en 2–3,5 s), pero el contenido de
+las respuestas tuvo problemas:
+
+1. **Valores en $0:** en las pruebas 1 y 2 los 10 contratos listados tienen `Valor: $0 COP` y
+   `Proveedor: No Definido`. Son procesos en borrador/aprobación sin cuantía, poco útiles como
+   respuesta a "busca contratos de…".
+2. **Relevancia (prueba 2):** se pidieron contratos *de obra* del IDU y los 5 devueltos son de
+   *prestación de servicios*. El filtro de RACO, con la misma búsqueda, sí trajo procesos que
+   mencionan obras.
+3. **Relevancia (prueba 1):** uno de los 5 resultados coincide solo porque la entidad se llama
+   "Distrito Especial de Ciencia, **Tecnología** e Innovación de Medellín".
+4. **Duplicados (prueba 3):** de las 5 filas, 4 son el mismo proceso (`CO1.REQ.10379272`,
+   ferretería de Funza). Solo hay 2 contratos distintos. El filtro sí cumplió (todos
+   ≥ $500 M en Cundinamarca).
+
+Con estos hallazgos, el chat sirve para hacer la consulta en lenguaje natural y en un solo
+paso, pero hoy entrega menos resultados útiles que el filtro.

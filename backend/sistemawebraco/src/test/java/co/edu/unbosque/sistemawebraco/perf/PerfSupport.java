@@ -88,6 +88,53 @@ final class PerfSupport {
         return CLIENT.send(builder.build(), HttpResponse.BodyHandlers.ofString());
     }
 
+    /**
+     * POST a un endpoint SSE y lee la respuesta completa. Devuelve {primerFragmentoMs, totalMs}:
+     * el tiempo hasta el primer evento con texto (lo que el usuario espera antes de ver algo) y
+     * el tiempo hasta el evento {@code fin}.
+     */
+    static long[] postStream(String path, String jsonBody, String bearerToken) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(BASE_URL + path))
+                .timeout(Duration.ofSeconds(100))
+                .header("Content-Type", "application/json")
+                .header("Accept", "text/event-stream")
+                .header("Authorization", "Bearer " + bearerToken)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        long inicio = System.nanoTime();
+        HttpResponse<java.util.stream.Stream<String>> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofLines());
+        if (response.statusCode() != 200) {
+            throw new IllegalStateException("Respuesta inesperada (" + response.statusCode() + ")");
+        }
+
+        long primerFragmento = -1;
+        boolean fin = false;
+        String evento = null;
+        try (var lineas = response.body()) {
+            for (String linea : (Iterable<String>) lineas::iterator) {
+                if (linea.startsWith("event:")) {
+                    evento = linea.substring(6).trim();
+                } else if (linea.startsWith("data:")) {
+                    if ("error".equals(evento)) {
+                        throw new IllegalStateException("El backend envió un evento de error: " + linea);
+                    }
+                    if ("fin".equals(evento)) {
+                        fin = true;
+                        break;
+                    }
+                    if (primerFragmento < 0 && MAPPER.readTree(linea.substring(5)).path("texto").asText().length() > 0) {
+                        primerFragmento = (System.nanoTime() - inicio) / 1_000_000;
+                    }
+                } else if (linea.isEmpty()) {
+                    evento = null;
+                }
+            }
+        }
+        if (!fin) throw new IllegalStateException("El stream terminó sin el evento 'fin'");
+        return new long[]{primerFragmento, (System.nanoTime() - inicio) / 1_000_000};
+    }
+
     /** Corre {@code llamada} {@code iteraciones} veces y devuelve los tiempos en milisegundos de cada corrida. */
     static List<Long> medirTiempos(int iteraciones, Ejecutable llamada) throws Exception {
         return java.util.stream.IntStream.range(0, iteraciones).mapToObj(i -> {

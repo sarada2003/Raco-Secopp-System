@@ -69,7 +69,7 @@ loginGoogle() {
           Swal.fire({
             icon: 'success',
             title: 'Inicio de sesión exitoso',
-            text: `¡Bienvenido ${res.usuario}!`,
+            text: `¡Bienvenido ${res.usuario?.nombre || res.usuario?.email || ''}!`,
             timer: 2000,
             showConfirmButton: false
           });

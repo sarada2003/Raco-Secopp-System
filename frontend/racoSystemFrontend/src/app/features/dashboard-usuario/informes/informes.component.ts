@@ -97,7 +97,7 @@ export class InformesComponent implements OnInit {
         c.departamento_entidad || '—',
         c.modalidad_de_contratacion || '—',
         c.estado_del_procedimiento || '—',
-        c.valor_total_adjudicacion ? this.formatearValor(c.valor_total_adjudicacion) : '—',
+        c.valor_total_adjudicacion ? this.formatearValor(c.valor_total_adjudicacion) : 'Sin adjudicar',
         this.formatearFecha(c.fecha_de_publicacion_del || '')
       ]),
       styles: { fontSize: 7 },
